@@ -1,0 +1,103 @@
+oo2teilite-xslt2
+================
+
+OpenDocument Writer to TEI lite P5 converter, written in XSLT 2.0
+
+Works with OpenOffice 3.2 and newer.
+
+
+* This package contains:
+
+  - oo-identity.xsl     export the internal .odt document representation
+  - oo2teilite.xsl      the actual TEI export filter
+  - oo2teilite.jar      XML export filter package, to be installed in 
+                        "Tools > XML Filter Settings..."
+
+  You may use oo-identity.xsl for debugging purposes. The XML that is
+  exported by this stylesheet looks exactly as OOo sees the data when 
+  applying a stylesheet. You can run saxon on this export on the command
+  line, which will make debugging easier.
+
+  A sample invocation looks like:
+  saxon -xsl:oo2teilite.xsl -s:mydoc.ooo.xml -o:mydoc.tei.xml debug=yes
+
+  When the parameter debug is at any value, several debug files (pattern:
+  debug.00.pass.xml) will be created where the consecutive conversion 
+  stages may be tracked.
+
+
+* Features:
+
+  - nested <div>s, either (if present) via h/@outline-level or via named 
+    paragraph styles ('Heading 1', 'Heading 2', ... -- configurable)
+  
+  - nested text formatting, e.g.: 
+      bold
+      /bold
+      bold+italic
+      /bold+italic
+      bold+italic+wide
+      /bold+italic+wide
+      bold+italic
+      /bold+italic
+      bold
+      /bold
+    =>
+      bold
+        italic
+          wide
+          /wide
+        /italic
+      /bold
+  
+  - tables
+  
+  - footnotes
+  
+  - sequential numbering ("Randnummern") of content-carrying elements via xml:id
+  
+
+* Missing features:
+
+  - Track changes support
+  
+  - Image support
+  
+  - lots of...
+  
+
+* Bugs:
+
+  - this is work in progress, don't expect everything to run smoothly
+
+  - text style resolution doesn't look for default styles or for text styles
+    of the containig paragraph. This may lead to redundant <hi> tags for 
+    default formatting, such as <p><hi rend="style-normal">...
+
+
+These files are made available subject to the terms of
+the GNU Lesser General Public License Version 2.1
+
+Authors:
+Gerrit Imsieke, Ralph Krüger, le-tex publishing services GmbH, Leipzig
+http://www.le-tex.de/
+Funded by Yanus Verlag GmbH, Hamburg
+http://www.yanus.de/
+
+GNU Lesser General Public License Version 2.1
+=============================================
+Copyright (C) 2009 le-tex publishing services GmbH
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
