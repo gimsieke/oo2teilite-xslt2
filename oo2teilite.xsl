@@ -37,7 +37,7 @@
       <!ENTITY  numberedMainTextElements
           "   /tei:TEI/tei:text/tei:front/tei:titlePage/tei:docTitle
             | /tei:TEI/tei:text/tei:front/tei:titlePage/tei:docAuthor
-            | /tei:TEI/tei:text/tei:body//tei:div/tei:head[not( ancestor::&footnote;)]
+            | /tei:TEI/tei:text/tei:body//tei:div/tei:head[not( ancestor::&footnote; or . = '')]
             | /tei:TEI/tei:text/tei:body//tei:lg[not( ancestor::&footnote;)]
             | /tei:TEI/tei:text/tei:body//tei:p/tei:table[not( ancestor::&footnote;)]
             | /tei:TEI/tei:text/tei:body//tei:p/tei:quote[not( ancestor::&footnote;)]
@@ -500,6 +500,16 @@
 <!--       </hurz> -->
 <!--     </xsl:message> -->
 
+    <!-- deviating ALIGNMENT -->
+    <xsl:if test="style:paragraph-properties/@fo:text-align">
+      <xsl:attribute name="align" select="style:paragraph-properties/@fo:text-align" />
+    </xsl:if>
+
+    <!-- deviating BORDER -->
+    <xsl:if test="style:paragraph-properties/@fo:border">
+      <xsl:attribute name="border" select="." />
+    </xsl:if>
+
     <!-- deviating GENERIC FONT FAMILY -->
     <xsl:if test="style:text-properties/@style:font-name">
       <xsl:variable name="font-family-generic" 
@@ -591,6 +601,12 @@
   <xsl:function name="letex:rend" as="xsd:string?">
     <xsl:param name="attr" as="attribute(*)" />
     <xsl:choose>
+      <xsl:when test="name($attr) = 'border'">
+        <xsl:choose>
+          <xsl:when test="$attr = 'none'" />
+          <xsl:otherwise>border</xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
       <xsl:when test="name($attr) = 'font-family-generic'">
         <xsl:choose>
           <xsl:when test="$attr = 'modern'">typewriter</xsl:when>
@@ -599,6 +615,12 @@
       <xsl:when test="name($attr) = 'font-style'">
         <xsl:choose>
           <xsl:when test="$attr = 'normal'">style-normal</xsl:when>
+          <xsl:otherwise><xsl:value-of select="$attr"/></xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:when test="name($attr) = 'font-weight'">
+        <xsl:choose>
+          <xsl:when test="$attr = 'normal'">weight-normal</xsl:when>
           <xsl:otherwise><xsl:value-of select="$attr"/></xsl:otherwise>
         </xsl:choose>
       </xsl:when>
@@ -803,6 +825,7 @@
         <xsl:choose>
           <xsl:when test="current-grouping-key()">
             <div type="verse">
+              <xsl:copy-of select="current-group()[1]/@rend" />
               <xsl:apply-templates select="current-group()" mode="#current" />
             </div>
           </xsl:when>
