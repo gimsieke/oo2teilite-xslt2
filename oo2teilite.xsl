@@ -322,6 +322,7 @@
             <xsl:for-each-group select="$nodes" group-starting-with="*[letex:satisfies-heading-markup(., $new-heading-markup[1])]">
               <xsl:choose>
                 <xsl:when test="letex:satisfies-heading-markup(current-group()[1], $new-heading-markup[1])">
+                  <xsl:text>&#xa;</xsl:text>
                   <div type="{replace($new-heading-markup[1], '\s+', '_')}">
 <!--                     <xsl:copy-of select="current-group()[1]/@*" /> -->
                     <head>
@@ -414,6 +415,7 @@
         <xsl:for-each-group select="$nodes" group-starting-with="text:h[@text:outline-level = $outline-level]">
           <xsl:choose>
             <xsl:when test="current-group()[1]/@text:outline-level = $outline-level">
+              <xsl:text>&#xa;</xsl:text>
               <div type="Heading_{$outline-level}">
                 <head>
                   <xsl:copy-of select="current-group()[1]/node()" />
@@ -824,6 +826,7 @@
       <xsl:for-each-group select="node()" group-adjacent="boolean(self::text:p[@style-name='Verse'])">
         <xsl:choose>
           <xsl:when test="current-grouping-key()">
+            <xsl:text>&#xa;</xsl:text>
             <div type="verse">
               <xsl:copy-of select="current-group()[1]/@rend" />
               <xsl:apply-templates select="current-group()" mode="#current" />
@@ -845,6 +848,7 @@
       <xsl:for-each-group select="node()" group-starting-with="text:p[@style-name = 'Opener']">
         <xsl:choose>
           <xsl:when test="current-group()[1][@style-name='Opener']">
+            <xsl:text>&#xa;</xsl:text>
             <div type="letter">
               <xsl:apply-templates select="current-group()
                                            except 
@@ -863,6 +867,7 @@
   </xsl:template>
 
   <xsl:template match="text:p[@style-name = 'Opener']" mode="letter">
+    <xsl:text>&#xa;</xsl:text>
     <opener>
       <xsl:apply-templates select="@* except @style-name | node()" mode="#current" />
     </opener>
@@ -964,6 +969,7 @@
       <xsl:for-each-group select="node()" group-adjacent="boolean(self::tei:p)">
         <xsl:choose>
           <xsl:when test="current-grouping-key()">
+            <xsl:text>&#xa;</xsl:text>
             <div type="anonymous">
               <xsl:apply-templates select="current-group()" mode="#current"/>
             </div>
@@ -1018,6 +1024,7 @@
         <!-- split <p> on <table> and <quote> -->
         <xsl:variable  name="temp">
             <xsl:for-each-group  select="node()" group-adjacent="if ( self::table | self::quote ) then 1 else 0">
+              <xsl:text>&#xa;</xsl:text>
                 <xsl:choose>
                     <xsl:when  test="current-grouping-key()">
                       <xsl:apply-templates  select="current-group()"  mode="#current" />
