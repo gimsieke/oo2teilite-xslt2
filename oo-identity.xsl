@@ -32,7 +32,6 @@
   version="2.0" 
   office:class="text"
   office:version="1.2"
-  xmlns="http://www.tei-c.org/ns/1.0"
   xmlns:saxon="http://saxon.sf.net/"
   xmlns:letex="http://www.le-tex.de/namespace"
   xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0"
@@ -59,7 +58,6 @@
   xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
   xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
   xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
-  xmlns:tei="http://www.tei-c.org/ns/1.0"
   xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
   xmlns:xforms="http://www.w3.org/2002/xforms"
   xmlns:xhtml="http://www.w3.org/1999/xhtml"
@@ -67,7 +65,7 @@
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  exclude-result-prefixes="chart config dc dom dr3d draw field fo form grddl letex math meta number of office ooo oooc ooow rdfa rpt saxon script style svg table tei text xforms xhtml xlink xsd xsi xsl"
+  exclude-result-prefixes="chart config dc dom dr3d draw field fo form grddl letex math meta number of office ooo oooc ooow rdfa rpt saxon script style svg table text xforms xhtml xlink xsd xsi xsl"
   >
 
 
@@ -75,8 +73,6 @@
     method="xml"
     encoding="UTF-8"
     indent="no"
-    doctype-public="-//TEI//DTD TEI Lite 1.0//EN"
-    doctype-system="http://www.tei-c.org/release/xml/tei/custom/schema/dtd/teilite.dtd"
     saxon:suppress-indentation="head p"
     />
 

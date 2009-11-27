@@ -30,18 +30,19 @@
   <!DOCTYPE xsl:stylesheet [
  
       <!-- elements matching this XPath expression are considered to be footnotes -->
-      <!ENTITY  footnote "tei:note">
+      <!ENTITY  footnote "tei:note[@type='footnote']">
+      <!ENTITY  note "tei:note">
  
       <!-- TEI elements which are destined for getting a number, i.e. represent a piece of text of reasonable size;
            please note that note-elements and their children are numbered separately (see below) -->
       <!ENTITY  numberedMainTextElements
           "   /tei:TEI/tei:text/tei:front/tei:titlePage/tei:docTitle
             | /tei:TEI/tei:text/tei:front/tei:titlePage/tei:docAuthor
-            | /tei:TEI/tei:text/tei:body//tei:div/tei:head[not( ancestor::&footnote; or . = '')]
-            | /tei:TEI/tei:text/tei:body//tei:lg[not( ancestor::&footnote;)]
-            | /tei:TEI/tei:text/tei:body//tei:p/tei:table[not( ancestor::&footnote;)]
-            | /tei:TEI/tei:text/tei:body//tei:p/tei:quote[not( ancestor::&footnote;)]
-            | /tei:TEI/tei:text/tei:body//tei:p[not( ancestor::&footnote; or ancestor::tei:table or . = '')]
+            | /tei:TEI/tei:text/tei:body//tei:div/tei:head[not( ancestor::&note; or . = '')]
+            | /tei:TEI/tei:text/tei:body//tei:lg[not( ancestor::&note;)]
+            | /tei:TEI/tei:text/tei:body//tei:p/tei:table[not( ancestor::&note;)]
+            | /tei:TEI/tei:text/tei:body//tei:p/tei:quote[not( ancestor::&note;)]
+            | /tei:TEI/tei:text/tei:body//tei:p[not( ancestor::&note; or ancestor::tei:table or . = '')]
             | /tei:TEI/tei:text/tei:body//tei:table
           "
       >
@@ -66,6 +67,7 @@
       <!ENTITY  unnumberedElements
           "   (: case (1) :)
               /tei:TEI/tei:teiHeader | /tei:TEI/tei:teiHeader//*	(: in order to be able to use the expression in match-patterns, you must not use the descencdant-or-self-axis here :)
+            | *[ancestor::tei:note[@type='internal']]
               (: case (2) :)
             | /tei:TEI/tei:text/tei:front/tei:titlePage/tei:docTitle//*
             | /tei:TEI/tei:text/tei:front/tei:titlePage/tei:docAuthor//*
@@ -202,18 +204,18 @@
               <distributor>
                 <address>
                   <addrLine>
-                    <name key="Yanus" type="organisation">Yanus Verlag GmbH</name>
+                    <name type="organisation"></name>
                   </addrLine>
                   <addrLine>
-                    <name type="place">Hamburg</name>
+                    <name type="place"></name>
                   </addrLine>
-                  <addrLine>kontakt@yanus.de</addrLine>
+                  <addrLine></addrLine>
                 </address>
               </distributor>
               <idno type="book"></idno>
               <date></date>
-              <pubPlace>Hamburg, Germany</pubPlace>
-              <publisher>Copyright 2009, Yanus Verlag GmbH</publisher>
+              <pubPlace></pubPlace>
+              <publisher></publisher>
             </publicationStmt>
             <sourceDesc>
               <p></p>
@@ -503,14 +505,14 @@
 <!--     </xsl:message> -->
 
     <!-- deviating ALIGNMENT -->
-    <xsl:if test="style:paragraph-properties/@fo:text-align">
-      <xsl:attribute name="align" select="style:paragraph-properties/@fo:text-align" />
-    </xsl:if>
+    <xsl:for-each select="style:paragraph-properties/@fo:text-align[. ne 'start']">
+      <xsl:attribute name="align" select="." />
+    </xsl:for-each>
 
     <!-- deviating BORDER -->
-    <xsl:if test="style:paragraph-properties/@fo:border">
-      <xsl:attribute name="border" select="." />
-    </xsl:if>
+    <xsl:for-each select="style:paragraph-properties/@*[starts-with(name(), 'fo:border') and . ne 'none']">
+      <xsl:attribute name="{replace(name(), 'fo:', '')}" select="." />
+    </xsl:for-each>
 
     <!-- deviating GENERIC FONT FAMILY -->
     <xsl:if test="style:text-properties/@style:font-name">
@@ -577,6 +579,32 @@
   </xsl:function>
 
 
+  <!-- TRACK CHANGES markup -->
+
+  <xsl:function name="letex:tc-action" as="xsd:string">
+    <xsl:param name="change-start-or-end-node" as="node()" />
+    <xsl:value-of select="$change-start-or-end-node/ancestor::office:text/text:tracked-changes/text:changed-region[@text:id = $change-start-or-end-node/@text:change-id]/*/local-name()" />
+  </xsl:function>
+
+  <xsl:function name="letex:is-deleted" as="xsd:boolean">
+    <xsl:param name="node" as="node()" />
+    <xsl:variable name="bool-seq" as="xsd:boolean*">
+      <xsl:for-each select="$node/ancestor::office:text/text:tracked-changes/text:changed-region[text:deletion]/@text:id">
+        <xsl:variable name="change-start" select="$node/ancestor::office:text//text:change-start[@text:change-id = current()]" />
+        <xsl:variable name="change-end" select="$node/ancestor::office:text//text:change-end[@text:change-id = current()]" />
+        <xsl:variable name="is-between" select="$node &gt;&gt; $change-start and $node &lt;&lt; $change-end" as="xsd:boolean"/>
+        <xsl:value-of select="$is-between"/>
+      </xsl:for-each>
+    </xsl:variable>
+    <xsl:value-of select="$bool-seq = true()" />
+  </xsl:function>
+
+  <!-- INCOMPLETE: We don't carry out paragraph merges yet! -->
+  <xsl:template match="*[letex:is-deleted(.)]" mode="resolve-styles" priority="1000"/>
+  
+  <xsl:template match="text:change-start | text:change-end | text:tracked-changes" mode="resolve-styles" />
+
+
   <!-- GROUP (NEST) STYLES -->
 
   <xsl:template match="*[text:span[@* and not(@processed)]]" mode="group-styles">
@@ -627,6 +655,7 @@
         </xsl:choose>
       </xsl:when>
       <xsl:otherwise>
+<!--         <xsl:value-of select="string-join((name($attr), $attr), ': ')"/> -->
         <xsl:value-of select="$attr"/>
       </xsl:otherwise>
     </xsl:choose>
@@ -688,8 +717,7 @@
                   <xsl:variable name="common-properties" select="$properties[every $s in current-group() satisfies (. = letex:attr-hashes($s))]"/>
                   <text:span processed="true">
                     <xsl:for-each select="$common-properties">
-                      <xsl:attribute name="{letex:attname(current())}" select="letex:attval(current())">
-                      </xsl:attribute>
+                      <xsl:attribute name="{letex:attname(current())}" select="letex:attval(current())" />
                     </xsl:for-each>
                     <xsl:apply-templates select="current-group()" mode="exclude">
                       <xsl:with-param name="exclude-properties" select="$common-properties" />
@@ -741,7 +769,7 @@
   <!-- mode="main" -->
 
   <xsl:template match="text:note[@text:note-class='footnote']" mode="main">
-    <note xml:id="{@text:id}">
+    <note xml:id="{@text:id}" type="footnote">
       <xsl:if test="text:note-citation">
         <xsl:attribute name="n" select="text:note-citation" />
       </xsl:if>
@@ -764,9 +792,26 @@
 
   <xsl:template match="text:p" mode="main">
     <p>
-      <xsl:copy-of select="@* except @style-name[. = 'Standard']" />
+      <xsl:copy-of select="@* except @style-name" />
+      <xsl:if test="@style-name[. ne 'Standard'] and not(@rend)">
+        <xsl:attribute name="rend" select="@style-name" />
+      </xsl:if>
       <xsl:apply-templates mode="#current" />
     </p>
+  </xsl:template>
+
+  <xsl:template match="text:p[matches(letex:rendered-content(.), '^\s*&#x2015;\s*$')]" mode="main">
+    <milestone unit="section" type="dash" />
+    <xsl:call-template name="process-annotations" />
+  </xsl:template>
+
+  <xsl:template match="text:p[matches(letex:rendered-content(.), '^\s*\*{3,6}\s*$')]" mode="main">
+    <milestone unit="section" type="asterisks" />
+    <xsl:call-template name="process-annotations" />
+  </xsl:template>
+
+  <xsl:template name="process-annotations">
+    <xsl:apply-templates select="office:annotation" mode="#current" />
   </xsl:template>
 
   <xsl:template match="text:p[text:sequence/@text:name]" mode="main" priority="50" />
@@ -807,6 +852,41 @@
       <xsl:apply-templates mode="#current" />
     </emph>
   </xsl:template>
+
+  <xsl:template match="text:a[@xlink:href]" mode="main">
+    <ref target="{@xlink:href}">
+      <xsl:apply-templates mode="#current" />
+    </ref>
+  </xsl:template>
+
+  <xsl:template match="office:annotation" mode="main">
+    <note type="internal"><xsl:apply-templates select="* except (dc:creator union dc:date)" mode="#current" />
+    (<name><xsl:value-of select="dc:creator"/></name><!--<date when-iso="{dc:date}"/>-->)
+    </note>
+  </xsl:template>
+
+
+  <!-- Utility function to determine the actually rendered content of an element (modulo note text, etc.) -->
+  <xsl:function name="letex:rendered-content" as="xsd:string?">
+    <xsl:param name="node" as="node()" />
+    <xsl:variable name="strings" as="xsd:string*">
+      <xsl:apply-templates select="$node" mode="rendered-content" />
+    </xsl:variable>
+    <xsl:value-of select="string-join($strings, '')"/>
+  </xsl:function>
+
+  <!-- list maybe incomplete: -->
+  <xsl:template match="text:p | text:h | text:span | 
+                       tei:p | tei:seg | tei:div  | tei:l | tei:hi | tei:emph | tei:head" mode="rendered-content">
+    <xsl:apply-templates mode="#current" />
+  </xsl:template>
+
+  <xsl:template match="text:note" mode="rendered-content">
+    <xsl:value-of select="note-citation" />
+  </xsl:template>
+
+  <xsl:template match="*" mode="rendered-content" priority="-0.5" />
+
 
   <!-- VERSE -->
 
@@ -912,13 +992,18 @@
 
   <xsl:template match="table:table-cell" mode="main">
     <cell>
-      <xsl:if test="@table:number-rows-spanned"><xsl:attribute name="rowspan" select="@table:number-rows-spanned" /></xsl:if>
-      <xsl:if test="@table:number-columns-spanned"><xsl:attribute name="colspan" select="@table:number-columns-spanned" /></xsl:if>
+      <xsl:if test="@table:number-rows-spanned"><xsl:attribute name="rows" select="@table:number-rows-spanned" /></xsl:if>
+      <xsl:if test="@table:number-columns-spanned"><xsl:attribute name="cols" select="@table:number-columns-spanned" /></xsl:if>
       <xsl:apply-templates mode="#current" />
     </cell>
   </xsl:template>
 
   <xsl:template match="table:covered-table-cell" mode="main" />
+
+  <!-- §§§ warning: piggybacking on anonymous-divs mode; no fundamental but only practical reasons to use this mode here! -->
+  <xsl:template match="tei:cell/tei:p" mode="anonymous-divs">
+    <xsl:apply-templates mode="#current" />
+  </xsl:template>
 
 
   <!-- JOIN SEGS (adjacent segs with the same attributes, possibly separated by whitespace-only text nodes) -->

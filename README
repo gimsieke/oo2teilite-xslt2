@@ -8,10 +8,12 @@ Works with OpenOffice 3.2 and newer.
 
 * This package contains:
 
-  - oo-identity.xsl     export the internal .odt document representation
+  - oo-identity.xsl     exports the internal .odt document representation
   - oo2teilite.xsl      the actual TEI export filter
   - oo2teilite.jar      XML export filter package, to be installed in 
                         "Tools > XML Filter Settings..."
+  - beispiele.odt       sample OpenDocument 1.2 file, illustrating some
+                        of the export filter's features.
 
   You may use oo-identity.xsl for debugging purposes. The XML that is
   exported by this stylesheet looks exactly as OOo sees the data when 
@@ -56,17 +58,24 @@ Works with OpenOffice 3.2 and newer.
   
   - sequential numbering ("Randnummern") of content-carrying elements via xml:id
   
+  - track changes (the final version will be exported)
+
+  - comments
 
 * Missing features:
 
-  - Track changes support
+  - image support
   
-  - Image support
-  
-  - lots of...
+  - better table support   
+
+  - many more 
   
 
 * Bugs:
+
+  - track changes doesn't work correctly (see the corresponding comments
+    in beispiele.odt, or run the export filter on that file if you don't
+    speak German)
 
   - this is work in progress, don't expect everything to run smoothly
 
