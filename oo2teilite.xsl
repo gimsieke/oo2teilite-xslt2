@@ -268,8 +268,14 @@
     <!-- Some people dislike this brute-force, sequential processing. For good reasons (waste of memory, 
          lack of elegance, reliance on a default catch-all identity transformation).
          But this separation of concerns (one concern per processing mode) helps you keep the code modular 
-         in cases where an external chaining of transformations isn't practicable or where a "closed form" 
-         representation of all rules in a single mode is too complex. 
+         in cases where an external chaining of transformations isn't practicable, where a "closed form" 
+         representation of all rules in a single mode is too complex or where an intelligent processing
+         of subtrees in adequate modes would be too – ehm – intelligent. 
+         Of course it makes sense to process only a subtree for which a certain mode makes sense in that
+         mode, in contrast to processing the whole document in that mode. But you must admit that, for 
+         debugging purposes, it's nice to be able to export the whole document as it looks before being
+         processed in a certain mode. Therefore the brute-force, global-variable, identity-default 
+         transformations.
          -->
  
  
@@ -472,7 +478,7 @@
 
 
 
-  <!-- please not the subtle difference between mode="resolve-styles" (catch-all) and resolve-style (local transformation) -->
+  <!-- please note the subtle difference between mode="resolve-styles" (catch-all) and resolve-style (local transformation) -->
 
   <!-- Create attributes for *deviating* formatting: -->
   <xsl:template match="office:automatic-styles/style:style" mode="resolve-style" as="attribute(*)*">

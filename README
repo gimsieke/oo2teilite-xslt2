@@ -69,7 +69,8 @@ Works with OpenOffice 3.2 and newer.
   - better table support   
 
   - many more 
-  
+
+  - documentation (using XSLTdoc, XSLStyle or similar)
 
 * Bugs:
 
