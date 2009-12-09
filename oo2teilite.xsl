@@ -29,11 +29,21 @@
   -->
   <!DOCTYPE xsl:stylesheet [
  
-      <!-- elements matching this XPath expression are considered to be footnotes -->
-      <!ENTITY  footnote "tei:note[@type='footnote']">
+      <!-- Introductory notes:
+           Amongst others, this export filter implements the generation of marginal notes containing numbers.
+           These numbers can be used to reference the relating parts of the text.
+           Most commonly such a unit of text is a single para, but some other text elements get numbers too (e.g., headers, tables, ...).
+           Footnotes and their child elements are special insofar as they get numbered separately.
+      -->
+
+      <!-- elements matching this XPath expression are considered to be notes (footnotes and other ones, e.g. comments),
+           whose content will not be treated as part of the main text body (as far as numbering is concerned) -->
       <!ENTITY  note "tei:note">
  
-      <!-- TEI elements which are destined for getting a number, i.e. represent a piece of text of reasonable size;
+      <!-- elements matching this XPath expression are considered to be footnotes, whose content will be numered seperately -->
+      <!ENTITY  footnote "tei:note[@type='footnote']">
+
+      <!-- TEI elements which are destined for getting a marginal number;
            please note that note-elements and their children are numbered separately (see below) -->
       <!ENTITY  numberedMainTextElements
           "   /tei:TEI/tei:text/tei:front/tei:titlePage/tei:docTitle
@@ -43,6 +53,8 @@
             | /tei:TEI/tei:text/tei:body//tei:p/tei:table[not( ancestor::&note;)]
             | /tei:TEI/tei:text/tei:body//tei:p/tei:quote[not( ancestor::&note;)]
             | /tei:TEI/tei:text/tei:body//tei:p[not( ancestor::&note; or ancestor::tei:table or . = '')]
+            | /tei:TEI/tei:text/tei:body//tei:div[@type eq 'letter']/tei:opener
+            | /tei:TEI/tei:text/tei:body//tei:div[@type eq 'letter']/tei:closer
             | /tei:TEI/tei:text/tei:body//tei:table
           "
       >
@@ -78,10 +90,11 @@
             | /tei:TEI/tei:text/tei:body//tei:lg/tei:l
               (: case (3) :)
             | //tei:hi
+            | //tei:emph
           "
       >
  
-        <!-- Processing modes where the default transformation will be identity -->
+      <!-- Processing modes where the default transformation will be identity -->
       <!ENTITY  catchAllModes
           "resolve-styles
            group-styles
