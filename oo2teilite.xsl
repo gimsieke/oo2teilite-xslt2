@@ -50,9 +50,9 @@
             | /tei:TEI/tei:text/tei:front/tei:titlePage/tei:docAuthor
             | /tei:TEI/tei:text/tei:body//tei:div/tei:head[not( ancestor::&note; or . = '')]
             | /tei:TEI/tei:text/tei:body//tei:lg[not( ancestor::&note;)]
-            | /tei:TEI/tei:text/tei:body//tei:p/tei:table[not( ancestor::&note;)]
-            | /tei:TEI/tei:text/tei:body//tei:p/tei:quote[not( ancestor::&note;)]
+            | /tei:TEI/tei:text/tei:body//tei:quote[not( ancestor::&note;)]
             | /tei:TEI/tei:text/tei:body//tei:p[not( ancestor::&note; or ancestor::tei:table or . = '')]
+            | /tei:TEI/tei:text/tei:body//tei:p/tei:table[not( ancestor::&note;)]
             | /tei:TEI/tei:text/tei:body//tei:div[@type eq 'letter']/tei:opener
             | /tei:TEI/tei:text/tei:body//tei:div[@type eq 'letter']/tei:closer
             | /tei:TEI/tei:text/tei:body//tei:table
