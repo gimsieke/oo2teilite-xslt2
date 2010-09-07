@@ -108,7 +108,8 @@
            anonymous-divs
            add-linear-numbering
            splitParas_reassignRandnummern
-           add-subnumbering-for-split-paras"
+           add-subnumbering-for-split-paras
+					 gloss"
        >
  
   ]>
@@ -461,10 +462,10 @@
   <xsl:template match="text()" mode="resolve-styles">
     <xsl:value-of select="normalize-unicode(.)"/>
   </xsl:template>
-
+	
   <xsl:template match="@text:style-name" mode="resolve-styles">
     <xsl:choose>
-      <xsl:when test=". = /office:document/office:styles/style:style/@style:name">
+      <xsl:when test="(. = /office:document/office:styles/style:style/@style:name)  or  parent::text:list">
         <xsl:attribute name="style-name" select="." />
       </xsl:when>
       <xsl:otherwise>
@@ -811,13 +812,17 @@
 
   <xsl:template match="text:p" mode="main">
     <p>
-      <xsl:copy-of select="@* except @style-name" />
-      <xsl:if test="@style-name[. ne 'Standard'] and not(@rend)">
-        <xsl:attribute name="rend" select="@style-name" />
-      </xsl:if>
+			<xsl:call-template name="paragraph-attributes"/>
       <xsl:apply-templates mode="#current" />
     </p>
   </xsl:template>
+	
+	<xsl:template name="paragraph-attributes">
+		<xsl:copy-of select="@* except @style-name" />
+		<xsl:if test="@style-name[. ne 'Standard'] and not(@rend)">
+			<xsl:attribute name="rend" select="@style-name" />
+		</xsl:if>
+	</xsl:template>
 
   <xsl:template match="text:p[matches(letex:rendered-content(.), '^\s*&#x2015;\s*$')]" mode="main">
     <milestone unit="section" type="dash" />
@@ -983,18 +988,28 @@
   <!-- TABLES -->
 
   <xsl:template match="table:table" mode="main">
-    <table>
-      <!-- WARNING: we are in trouble if there's a p[@name='Table'] above *and* below the table. Unfortunately ODF doesn't encourage grouping of tables and their captions. -->
-      <xsl:apply-templates select="preceding-sibling::*[1]/self::text:p[text:sequence/@text:name='Table'] union following-sibling::*[1]/self::text:p[text:sequence/@text:name='Table']" mode="caption" />
-      <xsl:apply-templates mode="#current" />
-    </table>
+		<xsl:choose>
+			<xsl:when test="matches( @table:style-name, '[Gg]lossar(tabelle)?' )">
+				<list type="gloss">
+					<!--<head/>-->
+					<xsl:apply-templates mode="gloss"/>
+				</list>
+			</xsl:when>
+			<xsl:otherwise>
+				<table>
+					<!-- WARNING: we are in trouble if there's a p[@name='Table'] above *and* below the table. Unfortunately ODF doesn't encourage grouping of tables and their captions. -->
+					<xsl:apply-templates select="preceding-sibling::*[1]/self::text:p[text:sequence/@text:name='Table'] union following-sibling::*[1]/self::text:p[text:sequence/@text:name='Table']" mode="caption" />
+					<xsl:apply-templates mode="#current" />
+				</table>
+			</xsl:otherwise>
+		</xsl:choose>
   </xsl:template>
 
   <xsl:template match="text:sequence" mode="caption">
     <xsl:apply-templates mode="#current" />
   </xsl:template>
 
-  <xsl:template match="table:table-column" mode="main" />
+  <xsl:template match="table:table-column" mode="main gloss" />
 
   <xsl:template match="table:table-header-rows" mode="main">
     <xsl:apply-templates mode="#current" />
@@ -1008,6 +1023,13 @@
       <xsl:apply-templates mode="#current" />
     </row>
   </xsl:template>
+	
+	<!-- no term and no definition: delete row -->
+	<xsl:template match="table:table-row[ not( normalize-space( .//text:p/text() ) ) ]" mode="gloss"/>
+
+	<xsl:template match="table:table-row" mode="gloss">
+     <xsl:apply-templates mode="#current" />
+	</xsl:template>
 
   <xsl:template match="table:table-cell" mode="main">
     <cell>
@@ -1017,12 +1039,66 @@
     </cell>
   </xsl:template>
 
-  <xsl:template match="table:covered-table-cell" mode="main" />
+	<xsl:template match="table:table-cell" mode="gloss">
+		<xsl:choose>
+			<xsl:when test="not(preceding-sibling::*[1]/self::table:table-cell)">
+				<label>
+					<xsl:apply-templates mode="gloss">
+						<xsl:with-param name="glossaryelement" tunnel="yes" select="'gloss'"/>
+					</xsl:apply-templates>
+				</label>
+			</xsl:when>
+			<xsl:otherwise>
+				<item>
+					<xsl:apply-templates mode="gloss">
+						<xsl:with-param name="glossaryelement" tunnel="yes" select="'term'"/>
+					</xsl:apply-templates>
+				</item>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
+	<xsl:template match="text:p" mode="gloss">
+		<xsl:param name="glossaryelement" tunnel="yes" />
+		<xsl:element name="{$glossaryelement}">
+			<xsl:call-template name="paragraph-attributes" />
+			<xsl:apply-templates mode="#current" />
+		</xsl:element>
+	</xsl:template>
 
+  <xsl:template match="table:covered-table-cell" mode="main" />
+	
+	  <!-- LISTS -->
+		
+	<xsl:template match="text:list" mode="main">
+		<xsl:element name="list">
+			<xsl:attribute name="type"><xsl:value-of select="if( 
+																	matches( @style-name, '^(Numbering|Nummeriert).*' ) 
+																) 
+															then 'ordered' 
+															else 'bulleted'"/>
+			</xsl:attribute>
+			<xsl:apply-templates mode="#current"/>
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="text:list-item" mode="main">
+		<xsl:apply-templates mode="#current"/>
+	</xsl:template>
+	
+	<xsl:template match="text:list-item/text:p" mode="main">
+		<item>
+			<xsl:attribute name="rend" select="@style-name" />
+			<xsl:apply-templates mode="#current"/>
+		</item>
+	</xsl:template>
+
+	
   <!-- §§§ warning: piggybacking on anonymous-divs mode; no fundamental but only practical reasons to use this mode here! -->
   <xsl:template match="tei:cell/tei:p" mode="anonymous-divs">
     <xsl:apply-templates mode="#current" />
   </xsl:template>
+  
 
 
   <!-- JOIN SEGS (adjacent segs with the same attributes, possibly separated by whitespace-only text nodes) -->
