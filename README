@@ -53,7 +53,10 @@ Works with OpenOffice 3.2 and newer.
       /bold
   
   - tables
+	  - [glossary] a table with name "glossary" will be rendered as a list in tei (see tei-doc: examples)
   
+	- lists (ordered and unordered)
+	
   - footnotes
   
   - sequential numbering ("Randnummern") of content-carrying elements via xml:id
@@ -68,7 +71,7 @@ Works with OpenOffice 3.2 and newer.
   
   - better table support
 
-  - lists 
+  - nested lists 
 
   - many more 
 
