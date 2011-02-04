@@ -164,7 +164,12 @@
       doctype-public="-//TEI//DTD TEI Lite 1.0//EN"
       doctype-system="http://www.tei-c.org/release/xml/tei/custom/schema/dtd/teilite.dtd"
       saxon:suppress-indentation="head p l"
+			use-character-maps="quot"
       />
+ 
+		<xsl:character-map name="quot">
+			<xsl:output-character character="&#34;" string="&amp;#34;"/>
+		</xsl:character-map>
  
     <!-- customize me -->
     <xsl:variable name="heading-markup" select="('Heading 1', 'Heading 2', 'Heading 3', 'Heading 4')"/>
